@@ -1,5 +1,5 @@
 [package]
-name = "just-rust"
+name = "map-reduce"
 version = "0.1.0"
 edition = "2021"
 
