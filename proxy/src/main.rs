@@ -1,9 +1,11 @@
-use futures::FutureExt;
 use std::env;
 use std::error::Error;
+
+use futures::FutureExt;
 use tokio::io;
 use tokio::io::AsyncWriteExt;
 use tokio::net::{TcpListener, TcpStream};
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let listen_addr = env::args()
@@ -11,7 +13,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .unwrap_or_else(|| "127.0.0.1:8080".to_string());
     let forward_addr = env::args()
         .nth(2)
-        .unwrap_or_else(|| "127.0.0.1:8081".to_string());
+        .unwrap_or_else(|| "10.4.64.196:8443".to_string());
     println!("listen on {}", listen_addr);
     println!("forward to {}", forward_addr);
     let listener = TcpListener::bind(listen_addr).await?;
@@ -21,7 +23,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
             "accept:{:?}, and forward to {:?}",
             client_addr, forward_addr
         );
-        let transfer = transfer(inbound, forward_addr.clone()).map(|result| {
+        let outbound = TcpStream::connect(forward_addr.clone()).await?;
+        let transfer = transfer(inbound, outbound).map(|result| {
             if let Err(err) = result {
                 eprintln!("err:{:?}", err);
             }
@@ -29,8 +32,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         tokio::spawn(transfer);
     }
 }
-async fn transfer(mut inbound: TcpStream, forward_addr: String) -> Result<(), Box<dyn Error>> {
-    let mut outbound = TcpStream::connect(forward_addr).await?;
+
+async fn transfer(mut inbound: TcpStream, mut outbound: TcpStream) -> Result<(), Box<dyn Error>> {
     let (mut read_inbound, mut write_inbound) = inbound.split();
     let (mut read_outbound, mut write_outbound) = outbound.split();
     let client_to_server = async {
