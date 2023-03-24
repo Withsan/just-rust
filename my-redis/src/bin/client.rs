@@ -12,7 +12,7 @@ async fn main() {
             match cmd {
                 Command::Get { key, resp } => {
                     let value = client.get(&key).await;
-                    resp.send(value);
+                    resp.send(value).unwrap();
                 }
                 Command::Set { key, value, resp } => {
                     let result = client.set(&key, value).await;
