@@ -7,7 +7,9 @@ impl Solution {
         let mut map: HashMap<i32, i32> = HashMap::with_capacity(nums.capacity());
         for (index, num) in nums.iter().enumerate() {
             let i = &(target - num);
-            if let Some(v) = map.get(i) { return vec![index as i32, v.to_owned() as i32]}
+            if let Some(v) = map.get(i) {
+                return vec![index as i32, v.to_owned()];
+            }
             map.insert(num.to_owned(), index as i32);
         }
         vec![]
