@@ -1,17 +1,44 @@
-use axum::routing::get;
-use axum::Router;
+use std::net::SocketAddr;
+
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum::routing::{get, post};
+use axum::{Json, Router};
+use serde::{Deserialize, Serialize};
 
 #[tokio::main]
 async fn main() {
-    let app = Router::new().route("/", get(root)).route("/foo", get(bar));
-    axum::Server::bind(&"127.0.0.1:9999".parse().unwrap())
+    tracing_subscriber::fmt::init();
+    let app = Router::new()
+        .route("/", get(root))
+        .route("/user", post(create_user));
+    let addr = SocketAddr::from(([10, 4, 70, 1], 9999));
+    tracing::debug!("listening on {}", addr);
+    axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
 }
-async fn root() -> String {
-    "fuck root".to_string()
+
+async fn root() -> &'static str {
+    "hello"
 }
-async fn bar() -> String {
-    "fuck foo".to_string()
+
+async fn create_user(Json(payload): Json<CreateUserRequest>) -> impl IntoResponse {
+    let user = User {
+        id: 1,
+        name: payload.name,
+    };
+    (StatusCode::CREATED, Json(user))
+}
+
+#[derive(Deserialize)]
+struct CreateUserRequest {
+    name: String,
+}
+
+#[derive(Serialize)]
+struct User {
+    id: i32,
+    name: String,
 }
