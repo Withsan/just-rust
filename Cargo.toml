@@ -1,2 +1,2 @@
 [workspace]
-members = ["just-test", "leetcode", "map-reduce", "echo", "proxy", "my-redis","hello-axum"]
+members = ["just-test", "leetcode", "map-reduce", "echo", "proxy", "my-redis", "hello-axum"]
