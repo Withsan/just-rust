@@ -1,4 +1,4 @@
-use std::net::SocketAddr;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -12,7 +12,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(root))
         .route("/user", post(create_user));
-    let addr = SocketAddr::from(([10, 4, 70, 1], 9999));
+    let addr = SocketAddr::from(([127, 0, 0, 1], 9999));
     tracing::debug!("listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
@@ -20,8 +20,8 @@ async fn main() {
         .unwrap();
 }
 
-async fn root() -> &'static str {
-    "hello"
+async fn root() -> String {
+    "hello".to_string()
 }
 
 async fn create_user(Json(payload): Json<CreateUserRequest>) -> impl IntoResponse {
