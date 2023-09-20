@@ -1,0 +1,12 @@
+/home/lin/rust/just-rust/target/debug/deps/actix_router-8cc610a612072ed9.rmeta: /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/lib.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/de.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/path.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/resource.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/router.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/url.rs
+
+/home/lin/rust/just-rust/target/debug/deps/libactix_router-8cc610a612072ed9.rlib: /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/lib.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/de.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/path.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/resource.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/router.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/url.rs
+
+/home/lin/rust/just-rust/target/debug/deps/actix_router-8cc610a612072ed9.d: /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/lib.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/de.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/path.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/resource.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/router.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/url.rs
+
+/home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/lib.rs:
+/home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/de.rs:
+/home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/path.rs:
+/home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/resource.rs:
+/home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/router.rs:
+/home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/actix-router-0.1.5/src/url.rs:

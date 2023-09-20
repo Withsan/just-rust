@@ -1,3 +1,3 @@
 [workspace]
 resolver = "2"
-members = ["just-test", "leetcode", "map-reduce", "echo", "proxy", "my-redis", "hello-axum"]
+members = ["actix-gcd", "just-test", "leetcode", "map-reduce", "echo", "proxy", "my-redis", "hello-axum"]

@@ -1,0 +1,10 @@
+/home/lin/rust/just-rust/target/debug/deps/alloc_no_stdlib-2759c8d2c2293b68.rmeta: /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/lib.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/allocated_memory/mod.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/allocated_memory/index_macro.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/stack_allocator.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/allocated_stack_memory.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/init.rs
+
+/home/lin/rust/just-rust/target/debug/deps/alloc_no_stdlib-2759c8d2c2293b68.d: /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/lib.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/allocated_memory/mod.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/allocated_memory/index_macro.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/stack_allocator.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/allocated_stack_memory.rs /home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/init.rs
+
+/home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/lib.rs:
+/home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/allocated_memory/mod.rs:
+/home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/allocated_memory/index_macro.rs:
+/home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/stack_allocator.rs:
+/home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/allocated_stack_memory.rs:
+/home/lin/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloc-no-stdlib-2.0.4/src/init.rs:
