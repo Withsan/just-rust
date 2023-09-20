@@ -1,4 +1,5 @@
-
+/target
+*/target
 /map-reduce/map-reduce.iml
 /map-reduce/target/
 /leetcode/leetcode.iml
