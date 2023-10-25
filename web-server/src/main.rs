@@ -2,6 +2,7 @@ use std::{
     fs,
     io::{BufRead, BufReader, Write},
     net::{TcpListener, TcpStream},
+    sync::{mpsc, Arc, Mutex},
     thread,
     time::Duration,
 };
@@ -33,14 +34,42 @@ fn handle_connection(mut stream: TcpStream) {
     let resopnse = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
     stream.write_all(resopnse.as_bytes()).unwrap();
 }
-struct ThreadPool;
+type Job = Box<dyn FnOnce() + Send + 'static>;
+struct ThreadPool {
+    workers: Vec<Worker>,
+    jobs: mpsc::Sender<Job>,
+}
 impl ThreadPool {
     fn new(num: usize) -> ThreadPool {
-        ThreadPool
+        let mut workers = vec![];
+        let (sender, receiver) = mpsc::channel();
+        let shared_receiver = Arc::new(Mutex::new(receiver));
+        (0..num).for_each(|id| {
+            workers.push(Worker::new(id, shared_receiver.clone()));
+        });
+        ThreadPool {
+            workers,
+            jobs: sender,
+        }
     }
     fn execute<F>(&self, f: F)
     where
         F: FnOnce() + Send + 'static,
     {
+        self.jobs.send(Box::new(f)).unwrap();
+    }
+}
+struct Worker {
+    id: usize,
+    thread: thread::JoinHandle<()>,
+}
+impl Worker {
+    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
+        let thread = thread::spawn(move || {
+            while let Ok(job) = receiver.lock().unwrap().recv() {
+                job();
+            }
+        });
+        Worker { id, thread }
     }
 }
