@@ -12,7 +12,6 @@ fn main() {
     let pool = ThreadPool::new(10);
     for stream in tcp_listenr.incoming() {
         let stream = stream.unwrap();
-        println!("Connection established!");
         pool.execute(|| {
             handle_connection(stream);
         })
@@ -65,10 +64,10 @@ struct Worker {
 }
 impl Worker {
     fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
-        let thread = thread::spawn(move || {
-            while let Ok(job) = receiver.lock().unwrap().recv() {
-                job();
-            }
+        let thread = thread::spawn(move || loop {
+            let job = receiver.lock().unwrap().recv().unwrap();
+            println!("Worker {id} got a job");
+            job();
         });
         Worker { id, thread }
     }
