@@ -2,28 +2,32 @@ use std::env;
 use std::error::Error;
 
 use futures::FutureExt;
+use rand::Rng;
 use tokio::io;
 use tokio::io::AsyncWriteExt;
 use tokio::net::{TcpListener, TcpStream};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let listen_addr = env::args()
-        .nth(1)
-        .unwrap_or_else(|| "127.0.0.1:8080".to_string());
-    let forward_addr = env::args()
-        .nth(2)
-        .unwrap_or_else(|| "10.4.64.196:8443".to_string());
-    println!("listen on {}", listen_addr);
-    println!("forward to {}", forward_addr);
+    let mut agrs = env::args();
+    let listen_addr = agrs.nth(1).unwrap_or_else(|| "127.0.0.1:8080".to_string());
+    let forward_addr_vec = agrs.collect::<Vec<_>>();
+    println!(
+        "listen on {},length is {}",
+        listen_addr,
+        forward_addr_vec.len()
+    );
     let listener = TcpListener::bind(listen_addr).await?;
     loop {
         let (inbound, client_addr) = listener.accept().await?;
+        let forward_addr = forward_addr_vec
+            .get(rand::thread_rng().gen_range(0..forward_addr_vec.len()))
+            .unwrap();
         println!(
             "accept:{:?}, and forward to {:?}",
             client_addr, forward_addr
         );
-        let outbound = TcpStream::connect(forward_addr.clone()).await?;
+        let outbound = TcpStream::connect(forward_addr).await?;
         let transfer = transfer(inbound, outbound).map(|result| {
             if let Err(err) = result {
                 eprintln!("err:{:?}", err);
