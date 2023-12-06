@@ -8,5 +8,10 @@ async fn main() -> Result<(), Error> {
     for ele in response.kvs() {
         println!("Get {{{}:{}}}", ele.key_str()?, ele.value_str()?);
     }
+    let response = kv_client.get("cao", None).await?;
+    println!(
+        "Get cao is none? answer is {}",
+        response.kvs().first().is_none()
+    );
     Ok(())
 }
