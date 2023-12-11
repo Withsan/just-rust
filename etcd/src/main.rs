@@ -2,6 +2,7 @@ use etcd_client::Error;
 use tracing::Level;
 mod key_value;
 mod lease;
+mod lock;
 mod watch;
 
 #[tokio::main]
@@ -13,6 +14,7 @@ async fn main() -> Result<(), Error> {
     tracing::info!("hello tracing");
     // key_value::key_value().await?;
     // lease::lease().await?;
-    watch::watch().await?;
+    // watch::watch().await?;
+    lock::lock().await?;
     Ok(())
 }
