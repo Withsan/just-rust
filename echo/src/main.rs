@@ -3,15 +3,12 @@ use std::error::Error;
 
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
-use tokio::sync::OnceCell;
-
-static PORT_CELL: OnceCell<&[u8]> = OnceCell::const_new();
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let args = env::args();
-    let port = args.into_iter().nth(1).unwrap_or("8080".to_string());
-    PORT_CELL.set(port.as_bytes());
+    let mut args = env::args();
+    let boxed_port = args.next().unwrap().into_boxed_str();
+    let port: &'static str = Box::leak(boxed_port);
     let listener = TcpListener::bind("127.0.0.1:8081").await?;
     loop {
         let (mut socket, addr) = listener.accept().await?;
@@ -31,7 +28,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     "from client:[{:?}]",
                     &buf.iter()
                         .take(n)
-                        .chain(*PORT_CELL.get().unwrap())
+                        .chain(&port.as_bytes())
                         .map(|by| char::from(*by))
                         .collect::<String>()
                 );
