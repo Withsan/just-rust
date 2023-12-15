@@ -49,5 +49,6 @@ async fn transfer(mut inbound: TcpStream, mut outbound: TcpStream) -> Result<(),
         write_inbound.shutdown().await
     };
     tokio::try_join!(client_to_server, server_to_client)?;
+    // io::copy_bidirectional(&mut inbound, &mut outbound).await?;
     Ok(())
 }
