@@ -6,13 +6,18 @@ use rand::Rng;
 use tokio::io;
 use tokio::io::AsyncWriteExt;
 use tokio::net::{TcpListener, TcpStream};
+use tracing::Level;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    let subscribe = tracing_subscriber::FmtSubscriber::builder()
+        .with_max_level(Level::INFO)
+        .finish();
+    tracing::subscriber::set_global_default(subscribe).expect("error");
     let mut agrs = env::args();
     let listen_addr = agrs.nth(1).unwrap_or_else(|| "127.0.0.1:8080".to_string());
     let forward_addr_vec = agrs.collect::<Vec<_>>();
-    println!(
+    tracing::info!(
         "listen on {},length is {}",
         listen_addr,
         forward_addr_vec.len()
@@ -23,14 +28,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let forward_addr = forward_addr_vec
             .get(rand::thread_rng().gen_range(0..forward_addr_vec.len()))
             .unwrap();
-        println!(
+        tracing::info!(
             "accept:{:?}, and forward to {:?}",
-            client_addr, forward_addr
+            client_addr,
+            forward_addr
         );
         let outbound = TcpStream::connect(forward_addr).await?;
         let transfer = transfer(inbound, outbound).map(|result| {
             if let Err(err) = result {
-                eprintln!("err:{:?}", err);
+                tracing::error!("err:{:?}", err);
             }
         });
         tokio::spawn(transfer);
