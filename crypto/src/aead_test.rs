@@ -21,7 +21,7 @@ pub fn aead_test() -> Result<(), error::Unspecified> {
     let data = b"fuck you";
     let rand = rand::SystemRandom::new();
     let mut key_bytes = vec![0; AES_256_GCM.key_len()];
-    rand.fill(&mut key_bytes);
+    let _ = rand.fill(&mut key_bytes);
     let unbound_key = UnboundKey::new(&AES_256_GCM, &key_bytes)?;
     let nonce_sequence = CounterNonceSequence(1);
     let mut sealing_key = SealingKey::new(unbound_key, nonce_sequence);
