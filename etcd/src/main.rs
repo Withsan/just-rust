@@ -4,7 +4,6 @@ mod key_value;
 mod lease;
 mod lock;
 mod watch;
-
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let subscribe = tracing_subscriber::FmtSubscriber::builder()
@@ -15,6 +14,6 @@ async fn main() -> Result<(), Error> {
     // key_value::key_value().await?;
     // lease::lease().await?;
     // watch::watch().await?;
-    lock::lock().await?;
+    // lock::lock().await?;
     Ok(())
 }
