@@ -2,10 +2,12 @@ use std::{
     fs,
     io::{BufRead, BufReader, Write},
     net::{TcpListener, TcpStream},
-    sync::{mpsc, Arc, Mutex},
+    sync::{Arc, Mutex},
     thread,
     time::Duration,
 };
+
+use crossbeam_channel::{bounded, Receiver, Sender};
 
 fn main() {
     let tcp_listenr = TcpListener::bind("127.0.0.1:1993").unwrap();
@@ -36,15 +38,14 @@ fn handle_connection(mut stream: TcpStream) {
 type Job = Box<dyn FnOnce() + Send + 'static>;
 struct ThreadPool {
     workers: Vec<Worker>,
-    jobs: mpsc::Sender<Job>,
+    jobs: Sender<Job>,
 }
 impl ThreadPool {
     fn new(num: usize) -> ThreadPool {
         let mut workers = vec![];
-        let (sender, receiver) = mpsc::channel();
-        let shared_receiver = Arc::new(Mutex::new(receiver));
+        let (sender, receiver) = bounded(num);
         (0..num).for_each(|id| {
-            workers.push(Worker::new(id, shared_receiver.clone()));
+            workers.push(Worker::new(id, receiver.clone()));
         });
         ThreadPool {
             workers,
@@ -63,9 +64,9 @@ struct Worker {
     thread: thread::JoinHandle<()>,
 }
 impl Worker {
-    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
+    fn new(id: usize, receiver: Receiver<Job>) -> Worker {
         let thread = thread::spawn(move || loop {
-            let job = receiver.lock().unwrap().recv().unwrap();
+            let job = receiver.recv().unwrap();
             println!("Worker {id} got a job");
             job();
         });
