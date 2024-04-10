@@ -2,7 +2,6 @@ use std::{
     fs,
     io::{BufRead, BufReader, Write},
     net::{TcpListener, TcpStream},
-    sync::{Arc, Mutex},
     thread,
     time::Duration,
 };
@@ -37,7 +36,7 @@ fn handle_connection(mut stream: TcpStream) {
 }
 type Job = Box<dyn FnOnce() + Send + 'static>;
 struct ThreadPool {
-    workers: Vec<Worker>,
+    _workers: Vec<Worker>,
     jobs: Sender<Job>,
 }
 impl ThreadPool {
@@ -48,7 +47,7 @@ impl ThreadPool {
             workers.push(Worker::new(id, receiver.clone()));
         });
         ThreadPool {
-            workers,
+            _workers: workers,
             jobs: sender,
         }
     }
@@ -60,8 +59,8 @@ impl ThreadPool {
     }
 }
 struct Worker {
-    id: usize,
-    thread: thread::JoinHandle<()>,
+    _id: usize,
+    _thread: thread::JoinHandle<()>,
 }
 impl Worker {
     fn new(id: usize, receiver: Receiver<Job>) -> Worker {
@@ -70,6 +69,9 @@ impl Worker {
             println!("Worker {id} got a job");
             job();
         });
-        Worker { id, thread }
+        Worker {
+            _id: id,
+            _thread: thread,
+        }
     }
 }
