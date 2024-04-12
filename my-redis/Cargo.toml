@@ -5,6 +5,6 @@ edition = "2021"
 
 
 [dependencies]
-tokio = { version = "1.28.1", features = ["full"] }
+tokio = { workspace = true, features = ["full"] }
 mini-redis = "0.4.1"
 bytes = "1.4.0"

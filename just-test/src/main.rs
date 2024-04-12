@@ -1,17 +1,18 @@
-use std::{fs, io::Write};
-
 use tracing::Level;
 
-// #[tokio::main]
-fn main() {
+#[tokio::main]
+async fn main() {
     let subscribe = tracing_subscriber::FmtSubscriber::builder()
         .with_max_level(Level::INFO)
         .finish();
     tracing::subscriber::set_global_default(subscribe).expect("error");
-    let mut data = [2, 2];
-    println!("{:?}", &data[..]);
-    println!("{:?}", "fuck".as_bytes());
-    let mut file = fs::File::create("data.txt").unwrap();
-    file.write_all(&data).unwrap();
-    // write!(file, "{:?}", &data).unwrap();
+    let second = 2;
+    {
+        let first = 3;
+        let result = two(&first, &second).await;
+        println!("{result}")
+    }
+}
+async fn two<'a: 'b, 'b>(first: &'a i32, sencond: &'b i32) -> i32 {
+    first * sencond
 }
