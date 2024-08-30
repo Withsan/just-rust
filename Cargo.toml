@@ -1,5 +1,5 @@
 [workspace]
 resolver = "2"
-members = ["just-test", "leetcode", "map-reduce", "echo", "proxy", "my-redis", "hello-axum","web-server","etcd","crypto", "crossbeam-example", "rayon-example", "serde-example", "error_example", "collection_example"]
+members = ["just-test", "leetcode", "map-reduce", "echo", "proxy", "my-redis", "hello-axum","web-server","etcd","crypto", "crossbeam-example", "rayon-example", "serde-example", "error_example", "collection_example", "macro_example"]
 [workspace.dependencies]
-tokio ={ version = "1.37.0"}
+tokio ={ version = "1.40.0"}
