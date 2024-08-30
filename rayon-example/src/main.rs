@@ -3,7 +3,7 @@ fn main() {
 }
 #[cfg(test)]
 mod tests {
-    use std::{sync::mpsc::channel, thread, time::Duration};
+    use std::{sync::mpsc::channel, thread};
 
     use rand::{thread_rng, Rng};
     use rayon::{prelude::*, ThreadPoolBuilder};
