@@ -1,7 +1,29 @@
-use anyhow::{Error, Result};
-use axum::{http::StatusCode, response::IntoResponse};
+use anyhow::Error;
+use axum::http::HeaderMap;
+use axum::{
+    extract::Request,
+    http::StatusCode,
+    middleware::Next,
+    response::{IntoResponse, Response},
+};
+use axum_extra::headers::{authorization::Bearer, Authorization, HeaderMapExt};
 use sqlx::SqlitePool;
-
+pub async fn authentication(
+    header: HeaderMap,
+    request: Request,
+    next: Next,
+) -> Result<Response, StatusCode> {
+    if let Some(Authorization(bearer)) = header.typed_get::<Authorization<Bearer>>() {
+        if bearer.token().eq("fuck") {
+            Ok(next.run(request).await)
+        } else {
+            Err(StatusCode::UNAUTHORIZED)
+        }
+    } else {
+        Err(StatusCode::UNAUTHORIZED)
+    }
+}
+#[derive(Clone)]
 pub struct WebApp {
     db: SqlitePool,
 }

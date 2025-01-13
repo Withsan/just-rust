@@ -1,43 +1,53 @@
-use std::sync::Arc;
-
-use axum::{extract::State, routing::post, Json, Router};
+use axum::{
+    extract::{Path, State},
+    routing::{get, post},
+    Json, Router,
+};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 use crate::web::{AppError, WebApp};
 
-#[derive(Serialize, Deserialize)]
-struct CreateUserRequest {
+#[derive(Serialize, Deserialize, sqlx::FromRow)]
+pub struct User {
+    id: i64,
     name: String,
 }
-
-#[derive(Serialize, Deserialize)]
-struct User {
-    id: i32,
-    name: String,
+pub fn router() -> Router<Arc<WebApp>> {
+    Router::new()
+        .route("/user", post(add_user))
+        .route("/user/{id}", get(get_user))
 }
-fn router() -> Router {
-    Router::new().route("/user", post(add_user))
-}
-async fn add_user(
+pub async fn add_user(
+    State(app): State<Arc<WebApp>>,
     Json(user): Json<User>,
-    // State(app): State<Arc<WebApp>>,
-) -> Result<usize, AppError> {
-    Ok(1)
+) -> Result<Json<i64>, AppError> {
+    let mut conn = app.db().await.acquire().await?;
+    let id = sqlx::query!(
+        "
+        insert into user (id,name) values (?1,?2)
+        ",
+        user.id,
+        user.name
+    )
+    .execute(&mut *conn)
+    .await?
+    .last_insert_rowid();
+    Ok(Json::from(id))
 }
-// async fn add_user(
-//     Json(user): Json<User>,
-//     State(app): State<Arc<WebApp>>,
-// ) -> Result<usize, AppError> {
-//     let mut conn = app.db().await.acquire().await?;
-//     let id = sqlx::query!(
-//         r#"
-//         insert into user (id,name) valus (?1,?2)
-//         "#,
-//         user.id,
-//         user.name
-//     )
-//     .execute(&mut conn)
-//     .await?
-//     .last_insert_rowid();
-//     Ok(id)
-// }
+pub async fn get_user(
+    State(app): State<Arc<WebApp>>,
+    Path(id): Path<i64>,
+) -> Result<Json<User>, AppError> {
+    let mut conn = app.db().await.acquire().await?;
+    let user = sqlx::query_as!(
+        User,
+        "
+    SELECT id,name FROM user where id = ?1
+    ",
+        id
+    )
+    .fetch_one(&mut *conn)
+    .await?;
+    Ok(Json(user))
+}
