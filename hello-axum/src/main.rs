@@ -18,8 +18,9 @@ async fn main() -> Result<(), Error> {
     let web_app = Arc::new(WebApp::new("sqlite:web.db").await?);
     let app = Router::new()
         .merge(user::router())
-        .route_layer(middleware::from_fn(web::authentication))
-        .with_state(web_app.clone());
+        .route_layer(middleware::from_fn(web::auth::authentication))
+        .with_state(web_app.clone())
+        .merge(web::auth::router());
     tracing::info!("server is running on {:?}", addr);
     axum::serve(tcp_listener, app).await.unwrap();
     Ok(())
