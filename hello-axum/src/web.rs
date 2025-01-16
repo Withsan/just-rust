@@ -4,16 +4,16 @@ use sqlx::SqlitePool;
 pub mod auth;
 #[derive(Clone)]
 pub struct WebApp {
-    db: SqlitePool,
+    web_db: SqlitePool,
 }
 impl WebApp {
-    pub async fn new(db_url: &str) -> Result<Self, Error> {
+    pub async fn new(web_db_url: &str) -> Result<Self, Error> {
         Ok(Self {
-            db: SqlitePool::connect(db_url).await?,
+            web_db: SqlitePool::connect(web_db_url).await?,
         })
     }
     pub async fn db(&self) -> &SqlitePool {
-        &self.db
+        &self.web_db
     }
 }
 pub struct AppError(anyhow::Error);

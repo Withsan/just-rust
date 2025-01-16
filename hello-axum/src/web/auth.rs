@@ -36,17 +36,11 @@ async fn authorize(Json(payload): Json<AuthPayload>) -> Result<Json<AuthBody>, A
     let claims = Claims {
         sub: "b@b.com".to_owned(),
         company: "ACME".to_owned(),
-        exp: 2000000000, // May 2033
+        exp: 2000000000,
     };
     let token = encode(&Header::default(), &claims, &KEYS.encoding)
         .map_err(|_| AuthError::TokenCreation)?;
     Ok(Json(AuthBody::new(token)))
-}
-
-impl Display for Claims {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Email: {}\nCompany: {}", self.sub, self.company)
-    }
 }
 
 pub async fn authentication(
@@ -56,6 +50,7 @@ pub async fn authentication(
 ) -> Result<Response, AuthError> {
     if let Some(Authorization(bearer)) = header.typed_get::<Authorization<Bearer>>() {
         if let Ok(claims) = valid_token(bearer.token()) {
+            tracing::info!("{claims:?}");
             Ok(CLAIMES.scope(claims, next.run(request)).await)
         } else {
             Err(AuthError::WrongCredentials)
@@ -104,6 +99,11 @@ struct Claims {
     sub: String,
     company: String,
     exp: usize,
+}
+impl Display for Claims {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Email: {}\nCompany: {}", self.sub, self.company)
+    }
 }
 
 #[derive(Debug, Serialize)]
