@@ -1,6 +1,7 @@
 use std::fmt::Display;
-use std::sync::LazyLock;
+use std::sync::{Arc, LazyLock};
 
+use axum::extract::State;
 use axum::http::HeaderMap;
 use axum::routing::post;
 use axum::{
@@ -15,22 +16,33 @@ use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation}
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tokio::task_local;
+
+use super::WebApp;
 static KEYS: LazyLock<Keys> = LazyLock::new(|| {
     let secret = "sssss";
     Keys::new(secret.as_bytes())
 });
 
-pub(crate) fn router() -> Router {
+pub(crate) fn router() -> Router<Arc<WebApp>> {
     Router::new().route("/login", post(authorize))
 }
 task_local! {
     pub static CLAIMES:Claims;
 }
-async fn authorize(Json(payload): Json<AuthPayload>) -> Result<Json<AuthBody>, AuthError> {
-    if payload.client_id.is_empty() || payload.client_secret.is_empty() {
+async fn authorize(
+    State(app): State<Arc<WebApp>>,
+    Json(payload): Json<AuthPayload>,
+) -> Result<Json<AuthBody>, AuthError> {
+    let conn = app
+        .db()
+        .await
+        .acquire()
+        .await
+        .map_err(|_| AuthError::InternalError)?;
+    if payload.name.is_empty() || payload.password.is_empty() {
         return Err(AuthError::MissingCredentials);
     }
-    if payload.client_id != "foo" || payload.client_secret != "bar" {
+    if payload.name != "foo" || payload.password != "bar" {
         return Err(AuthError::WrongCredentials);
     }
     let claims = Claims {
@@ -72,6 +84,7 @@ impl IntoResponse for AuthError {
             AuthError::MissingCredentials => (StatusCode::BAD_REQUEST, "Missing credentials"),
             AuthError::TokenCreation => (StatusCode::INTERNAL_SERVER_ERROR, "Token creation error"),
             AuthError::InvalidToken => (StatusCode::BAD_REQUEST, "Invalid token"),
+            AuthError::InternalError => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error"),
         };
         let body = Json(json!({
             "error": error_message,
@@ -122,8 +135,8 @@ impl AuthBody {
 }
 #[derive(Debug, Deserialize)]
 struct AuthPayload {
-    client_id: String,
-    client_secret: String,
+    name: String,
+    password: String,
 }
 
 #[derive(Debug)]
@@ -132,4 +145,5 @@ pub(crate) enum AuthError {
     MissingCredentials,
     TokenCreation,
     InvalidToken,
+    InternalError,
 }

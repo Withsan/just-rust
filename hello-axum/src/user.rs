@@ -1,30 +1,33 @@
+// use anyhow::{Ok};
 use axum::{
     extract::{Path, State},
     routing::{get, post},
     Json, Router,
 };
 use serde::{Deserialize, Serialize};
-use sqlx::types::chrono::{DateTime, Local};
+use sqlx::{
+    pool::PoolConnection,
+    types::chrono::{Local, NaiveDateTime},
+    Acquire, Sqlite, SqlitePool,
+};
 use std::sync::Arc;
-use uuid::Uuid;
 
 use crate::web::{AppError, WebApp};
 pub fn router() -> Router<Arc<WebApp>> {
     Router::new()
         .route("/user", post(add_user))
-        .route("/user/{id}", get(get_user))
+        .route("/user/{name}", get(get_user))
 }
 
 #[derive(Serialize, Deserialize, sqlx::FromRow, sqlx::Type)]
 pub struct User {
-    id: String,
     name: String,
     password: String,
     solt: Vec<u8>,
     status: UserStatus,
     certificate: Vec<u8>,
     create_by: String,
-    create_at: DateTime<Local>,
+    create_at: NaiveDateTime,
 }
 #[derive(Serialize, Deserialize, sqlx::Type)]
 #[repr(i64)]
@@ -46,73 +49,86 @@ impl From<i64> for UserStatus {
 pub(crate) struct CreateUserRequest {
     name: String,
     password: String,
-    solt: Vec<u8>,
-    status: UserStatus,
     certificate: Vec<u8>,
 }
 pub async fn add_user(
     State(app): State<Arc<WebApp>>,
     Json(request): Json<CreateUserRequest>,
-) -> Result<Json<i64>, AppError> {
+) -> Result<(), AppError> {
     let mut conn = app.db().await.acquire().await?;
     let user = User {
-        id: Uuid::new_v4().to_string(),
         name: request.name,
         password: request.password,
         solt: vec![1],
-        status: UserStatus::Active,
         certificate: request.certificate,
+        status: UserStatus::Active,
         create_by: "".to_string(),
-        create_at: Local::now(),
+        create_at: Local::now().naive_utc(),
     };
-    let id = sqlx::query!(
+    sqlx::query!(
         "
         insert into user
-        (id,
-        name,
+        (name,
         password,
         solt,
-        status,
         certificate,
+        status,
         create_by,
         create_at)
-        values (?1,?2,?3,?4,?5,?6,?7,?8)
+        values (?1,?2,?3,?4,?5,?6,?7)
         ",
-        user.id,
         user.name,
         user.password,
         user.solt,
-        user.status,
         user.certificate,
+        user.status,
         user.create_by,
         user.create_at,
     )
     .execute(&mut *conn)
-    .await?
-    .last_insert_rowid();
-    Ok(Json::from(id))
+    .await?;
+    Ok(())
 }
 pub async fn get_user(
     State(app): State<Arc<WebApp>>,
-    Path(id): Path<String>,
+    Path(name): Path<String>,
 ) -> Result<Json<User>, AppError> {
     let mut conn = app.db().await.acquire().await?;
     let user = sqlx::query_as!(
         User,
         "
-        SELECT id,
-        name,
+        SELECT name,
         password,
         solt,
-        status,
         certificate,
+        status,
         create_by,
         create_at
-        FROM user where id = ?1
+        FROM user where name = ?1
         ",
-        id
+        name
     )
     .fetch_one(&mut *conn)
     .await?;
     Ok(Json(user))
+}
+async fn load_user_by_name(pool: &SqlitePool, name: &str) -> Result<User, AppError> {
+    let mut conn = pool.acquire().await?;
+    let user = sqlx::query_as!(
+        User,
+        "
+        SELECT name,
+        password,
+        solt,
+        certificate,
+        status,
+        create_by,
+        create_at
+        FROM user where name = ?1
+        ",
+        name
+    )
+    .fetch_one(&mut *conn)
+    .await?;
+    Ok(user)
 }

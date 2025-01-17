@@ -19,8 +19,8 @@ async fn main() -> Result<(), Error> {
     let app = Router::new()
         .merge(user::router())
         .route_layer(middleware::from_fn(web::auth::authentication))
-        .with_state(web_app.clone())
         .merge(web::auth::router())
+        .with_state(web_app.clone())
         .layer(TraceLayer::new_for_http().on_request(DefaultOnRequest::new().level(Level::INFO)));
     tracing::info!("server is running on {:?}", addr);
     axum::serve(tcp_listener, app).await.unwrap();

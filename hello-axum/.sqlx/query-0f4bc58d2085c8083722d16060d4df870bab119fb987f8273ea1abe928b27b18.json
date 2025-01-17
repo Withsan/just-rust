@@ -1,25 +1,25 @@
 {
   "db_name": "SQLite",
-  "query": "\n        SELECT id,\n        name,\n        password,\n        solt,\n        status,\n        certificate,\n        create_by,\n        create_at\n        FROM user where id = ?1\n        ",
+  "query": "\n        SELECT name,\n        password,\n        solt,\n        certificate,\n        status,\n        create_by,\n        create_at\n        FROM user where name = ?1\n        ",
   "describe": {
     "columns": [
       {
-        "name": "id",
+        "name": "name",
         "ordinal": 0,
         "type_info": "Text"
       },
       {
-        "name": "name",
+        "name": "password",
         "ordinal": 1,
         "type_info": "Text"
       },
       {
-        "name": "password",
+        "name": "solt",
         "ordinal": 2,
-        "type_info": "Text"
+        "type_info": "Blob"
       },
       {
-        "name": "solt",
+        "name": "certificate",
         "ordinal": 3,
         "type_info": "Blob"
       },
@@ -29,19 +29,14 @@
         "type_info": "Integer"
       },
       {
-        "name": "certificate",
-        "ordinal": 5,
-        "type_info": "Blob"
-      },
-      {
         "name": "create_by",
-        "ordinal": 6,
+        "ordinal": 5,
         "type_info": "Text"
       },
       {
         "name": "create_at",
-        "ordinal": 7,
-        "type_info": "Text"
+        "ordinal": 6,
+        "type_info": "Datetime"
       }
     ],
     "parameters": {
@@ -54,9 +49,8 @@
       false,
       false,
       false,
-      false,
       false
     ]
   },
-  "hash": "df294987831b9936e7e75d9f6d7d59c8b2aba07ff03cd41978d6fa509ff95d28"
+  "hash": "0f4bc58d2085c8083722d16060d4df870bab119fb987f8273ea1abe928b27b18"
 }
