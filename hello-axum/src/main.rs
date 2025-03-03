@@ -7,7 +7,6 @@ use tokio::net::TcpListener;
 use tower_http::trace::{DefaultOnRequest, TraceLayer};
 use tracing::Level;
 use web::WebApp;
-mod user;
 mod web;
 
 #[tokio::main]
@@ -17,7 +16,7 @@ async fn main() -> Result<(), Error> {
     let tcp_listener = TcpListener::bind(addr).await.unwrap();
     let web_app = Arc::new(WebApp::new("sqlite:web.db").await?);
     let app = Router::new()
-        .merge(user::router())
+        .merge(web::user::router())
         .route_layer(middleware::from_fn(web::auth::authentication))
         .merge(web::auth::router())
         .with_state(web_app.clone())

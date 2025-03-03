@@ -2,7 +2,7 @@ use std::fmt::Display;
 use std::sync::{Arc, LazyLock};
 
 use axum::extract::State;
-use axum::http::HeaderMap;
+use axum::http::{HeaderMap, Method, Uri};
 use axum::routing::post;
 use axum::{
     extract::Request,
@@ -10,12 +10,13 @@ use axum::{
     middleware::Next,
     response::{IntoResponse, Response},
 };
-use axum::{Json, Router};
+use axum::{Extension, Json, Router};
 use axum_extra::headers::{authorization::Bearer, Authorization, HeaderMapExt};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use tokio::task_local;
+
+use crate::web::user;
 
 use super::WebApp;
 static KEYS: LazyLock<Keys> = LazyLock::new(|| {
@@ -26,29 +27,24 @@ static KEYS: LazyLock<Keys> = LazyLock::new(|| {
 pub(crate) fn router() -> Router<Arc<WebApp>> {
     Router::new().route("/login", post(authorize))
 }
-task_local! {
-    pub static CLAIMES:Claims;
-}
 async fn authorize(
     State(app): State<Arc<WebApp>>,
     Json(payload): Json<AuthPayload>,
 ) -> Result<Json<AuthBody>, AuthError> {
-    let conn = app
-        .db()
-        .await
-        .acquire()
-        .await
-        .map_err(|_| AuthError::InternalError)?;
+    let pool = app.db().await;
     if payload.name.is_empty() || payload.password.is_empty() {
         return Err(AuthError::MissingCredentials);
     }
-    if payload.name != "foo" || payload.password != "bar" {
+
+    let user = user::load_user_by_name(pool, &payload.name)
+        .await
+        .map_err(|_| AuthError::WrongCredentials)?;
+    if user.name().ne(&payload.name) {
         return Err(AuthError::WrongCredentials);
     }
     let claims = Claims {
-        sub: "b@b.com".to_owned(),
-        company: "ACME".to_owned(),
-        exp: 2000000000,
+        sub: user.name().to_owned(),
+        exp: 2000,
     };
     let token = encode(&Header::default(), &claims, &KEYS.encoding)
         .map_err(|_| AuthError::TokenCreation)?;
@@ -57,13 +53,15 @@ async fn authorize(
 
 pub async fn authentication(
     header: HeaderMap,
-    request: Request,
+    mut request: Request,
     next: Next,
 ) -> Result<Response, AuthError> {
+    tracing::info!("{request:?}");
     if let Some(Authorization(bearer)) = header.typed_get::<Authorization<Bearer>>() {
         if let Ok(claims) = valid_token(bearer.token()) {
-            tracing::info!("{claims:?}");
-            Ok(CLAIMES.scope(claims, next.run(request)).await)
+            tracing::trace!("{claims:?}");
+            request.extensions_mut().insert(claims);
+            Ok(next.run(request).await)
         } else {
             Err(AuthError::WrongCredentials)
         }
@@ -76,6 +74,20 @@ fn valid_token(token: &str) -> Result<Claims, AuthError> {
         .map(|token_data| token_data.claims)
         .map_err(|_| AuthError::InvalidToken)
 }
+pub async fn authorization(
+    State(app): State<Arc<WebApp>>,
+    Extension(claims): Extension<Claims>,
+    request: Request,
+    next: Next,
+) -> Result<Response, AuthError> {
+    let uri = request.uri();
+    let method = request.method();
+    let user_name = claims.sub;
+    Ok(next.run(request).await)
+}
+fn has_permission(name: &str, uri: &Uri, method: &Method) -> bool {
+    true
+}
 
 impl IntoResponse for AuthError {
     fn into_response(self) -> Response {
@@ -84,7 +96,6 @@ impl IntoResponse for AuthError {
             AuthError::MissingCredentials => (StatusCode::BAD_REQUEST, "Missing credentials"),
             AuthError::TokenCreation => (StatusCode::INTERNAL_SERVER_ERROR, "Token creation error"),
             AuthError::InvalidToken => (StatusCode::BAD_REQUEST, "Invalid token"),
-            AuthError::InternalError => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error"),
         };
         let body = Json(json!({
             "error": error_message,
@@ -107,15 +118,14 @@ impl Keys {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Claims {
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Claims {
     sub: String,
-    company: String,
     exp: usize,
 }
 impl Display for Claims {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Email: {}\nCompany: {}", self.sub, self.company)
+        write!(f, "Name: {}", self.sub)
     }
 }
 
@@ -145,5 +155,4 @@ pub(crate) enum AuthError {
     MissingCredentials,
     TokenCreation,
     InvalidToken,
-    InternalError,
 }

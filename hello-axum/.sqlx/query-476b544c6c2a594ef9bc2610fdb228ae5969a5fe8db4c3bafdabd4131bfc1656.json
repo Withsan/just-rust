@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT\n        r.id as id,\n        r.name as name\n        FROM role r,user_role ur  where r.id =ur.role_id and ur.user_name  = ?1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "476b544c6c2a594ef9bc2610fdb228ae5969a5fe8db4c3bafdabd4131bfc1656"
+}

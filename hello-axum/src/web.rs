@@ -2,6 +2,9 @@ use anyhow::Error;
 use axum::{http::StatusCode, response::IntoResponse};
 use sqlx::SqlitePool;
 pub mod auth;
+pub mod role;
+pub mod user;
+pub mod user_role;
 #[derive(Clone)]
 pub struct WebApp {
     web_db: SqlitePool,

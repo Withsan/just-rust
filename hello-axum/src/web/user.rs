@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 // use anyhow::{Ok};
 use axum::{
     extract::{Path, State},
@@ -6,9 +7,8 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use sqlx::{
-    pool::PoolConnection,
     types::chrono::{Local, NaiveDateTime},
-    Acquire, Sqlite, SqlitePool,
+    SqlitePool,
 };
 use std::sync::Arc;
 
@@ -28,6 +28,11 @@ pub struct User {
     certificate: Vec<u8>,
     create_by: String,
     create_at: NaiveDateTime,
+}
+impl User {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
 }
 #[derive(Serialize, Deserialize, sqlx::Type)]
 #[repr(i64)]
@@ -93,27 +98,9 @@ pub async fn get_user(
     State(app): State<Arc<WebApp>>,
     Path(name): Path<String>,
 ) -> Result<Json<User>, AppError> {
-    let mut conn = app.db().await.acquire().await?;
-    let user = sqlx::query_as!(
-        User,
-        "
-        SELECT name,
-        password,
-        solt,
-        certificate,
-        status,
-        create_by,
-        create_at
-        FROM user where name = ?1
-        ",
-        name
-    )
-    .fetch_one(&mut *conn)
-    .await?;
-    Ok(Json(user))
+    Ok(Json(load_user_by_name(app.db().await, &name).await?))
 }
-async fn load_user_by_name(pool: &SqlitePool, name: &str) -> Result<User, AppError> {
-    let mut conn = pool.acquire().await?;
+pub(crate) async fn load_user_by_name(pool: &SqlitePool, name: &str) -> Result<User, AppError> {
     let user = sqlx::query_as!(
         User,
         "
@@ -128,7 +115,8 @@ async fn load_user_by_name(pool: &SqlitePool, name: &str) -> Result<User, AppErr
         ",
         name
     )
-    .fetch_one(&mut *conn)
-    .await?;
+    .fetch_one(pool)
+    .await
+    .map_err(|_| anyhow!("用户不存在"))?;
     Ok(user)
 }
